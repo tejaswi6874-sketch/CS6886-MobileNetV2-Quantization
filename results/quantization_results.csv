@@ -1,0 +1,8 @@
+weight_bits,activation_bits,weight_granularity,accuracy,accuracy_drop,time_seconds
+8,8,per-channel,90.86,0.05,63.380874
+6,8,per-channel,90.61,0.30,64.267009
+4,8,per-channel,87.96,2.95,63.608074
+8,6,per-channel,89.92,0.99,64.080182
+8,4,per-channel,69.93,20.98,64.167177
+6,6,per-channel,89.52,1.39,63.312438
+4,4,per-channel,68.29,22.62,64.387825
