@@ -1,7 +1,8 @@
 """Evaluation helpers for FP32 and fake-quantized MobileNetV2."""
 
+import copy
+
 import torch
-from torch import nn
 
 from .model import build_model, evaluate_accuracy
 from .quantization import replace_modules, calibrate
@@ -21,9 +22,10 @@ def load_model(checkpoint_path, device, num_classes=10):
 def quantize_and_calibrate(fp32_model, calibration_loader, device,
                            weight_bits=8, activation_bits=8,
                            calibration_batches=100):
-    """Create the fake-quantized copy and calibrate activation ranges."""
+    """Create an independent fake-quantized copy and calibrate activation ranges."""
+    model = copy.deepcopy(fp32_model)
     model = replace_modules(
-        fp32_model,
+        model,
         weight_bits=weight_bits,
         activation_bits=activation_bits,
         weight_per_channel=True,
@@ -34,7 +36,7 @@ def quantize_and_calibrate(fp32_model, calibration_loader, device,
 def evaluate_quantized(fp32_model, test_loader, calibration_loader, device,
                        weight_bits=8, activation_bits=8,
                        calibration_batches=100):
-    """Quantize, calibrate and evaluate a configuration."""
+    """Quantize, calibrate and evaluate one independent configuration."""
     model = quantize_and_calibrate(
         fp32_model, calibration_loader, device,
         weight_bits, activation_bits, calibration_batches,
