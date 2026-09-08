@@ -117,8 +117,14 @@ class ActivationFakeQuant(nn.Module):
 
 
 def replace_modules(model, weight_bits=8, activation_bits=8, weight_per_channel=True):
-    """Recursively replace Conv2d/Linear and ReLU/ReLU6 modules."""
+    """Recursively replace Conv2d/Linear and ReLU/ReLU6 modules.
+
+    Already-quantized wrapper modules are left untouched so that repeated
+    calls on the same model do not recursively wrap their inner layers.
+    """
     for name, child in list(model.named_children()):
+        if isinstance(child, (QuantizedConv2d, QuantizedLinear, ActivationFakeQuant)):
+            continue
         if isinstance(child, nn.Conv2d):
             setattr(model, name, QuantizedConv2d(child, weight_bits, weight_per_channel))
         elif isinstance(child, nn.Linear):
