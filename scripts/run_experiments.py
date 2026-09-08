@@ -3,8 +3,12 @@
 import argparse
 import csv
 from pathlib import Path
+import sys
 
 import torch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from src.data import get_cifar10_loaders, get_calibration_loader
 from src.evaluation import load_model, evaluate_quantized
