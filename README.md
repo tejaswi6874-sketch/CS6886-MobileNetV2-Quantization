@@ -9,7 +9,7 @@ The project has two stages:
 1. Train a FP32 MobileNetV2 baseline on CIFAR-10.
 2. Apply configurable post-training uniform linear quantization to weights and activations and compare multiple bit-widths.
 
-The selected operating point is W6/A8 (6-bit weights, 8-bit activations). It achieved 90.61% test accuracy versus 90.91% for the recorded FP32 baseline, a 0.30 percentage-point drop, with an estimated 4.56x persistent-storage compression. These are the currently recorded results; after a fresh seeded baseline run, the report and CSV should be updated if the measured values change.
+The selected operating point is W6/A8 (6-bit weights, 8-bit activations). It achieved 90.61% test accuracy versus 90.91% for the recorded FP32 baseline, a 0.30 percentage-point drop, with an estimated 4.56x persistent-storage compression.
 
 ## Repository structure
 
@@ -71,13 +71,13 @@ git lfs pull
 
 ### Baseline training
 
-Open `notebooks/mobilenetv2_trained.ipynb` and run the cells in order. The notebook now fixes `SEED = 42`, seeds Python/NumPy/PyTorch, uses deterministic cuDNN settings, and seeds DataLoader workers. The training configuration is 20 epochs, Adam with learning rate 0.001, weight decay 1e-4, and cosine-annealing learning-rate scheduling.
+Open `notebooks/mobilenetv2_trained.ipynb` and run the cells in order. The training configuration is 20 epochs, Adam with learning rate 0.001, weight decay 1e-4, and cosine-annealing learning-rate scheduling. The notebook records the training loss, training accuracy, test accuracy, and checkpoint size from the actual run; no metric values are hardcoded.
 
-Exact bit-for-bit reproducibility is not guaranteed across different hardware or software stacks, but the seed and deterministic settings make the experiment reproducible within the same environment as closely as PyTorch permits.
+The baseline training uses normal PyTorch random initialization, data shuffling, and augmentation. Therefore, small differences between independent training runs are possible. The submitted checkpoint and recorded results are the reference for the quantization evaluation.
 
 ### Quantization sweep
 
-Open `notebooks/quantization.ipynb` and run the cells in order. The notebook loads the FP32 checkpoint, calibrates activation ranges using 100 deterministic training batches, evaluates W8/A8, W6/A8, W4/A8, W8/A6, W8/A4, W6/A6, and W4/A4, and computes logical storage estimates.
+Open `notebooks/quantization.ipynb` and run the cells in order. The notebook loads the FP32 checkpoint, calibrates activation ranges using 100 training batches, evaluates W8/A8, W6/A8, W4/A8, W8/A6, W8/A4, W6/A6, and W4/A4, and computes logical storage estimates.
 
 The reusable command-line sweep is:
 
@@ -103,7 +103,7 @@ Biases and BatchNorm tensors remain in FP32.
 
 ## Reproducibility note
 
-The calibration/evaluation data loader is deterministic and non-shuffled. The baseline training notebook now uses a fixed global seed (`SEED = 42`), deterministic PyTorch settings, and seeded DataLoader workers. The historical 90.91% FP32 result was produced before this seed was added, so a fresh seeded run may produce slightly different metrics. Any changed measured result should replace the corresponding report/CSV value rather than being silently treated as identical.
+The calibration and evaluation data loaders are deterministic and non-shuffled. The quantization scripts use the saved FP32 checkpoint, so retraining is not required to reproduce the reported quantization sweep. Independent baseline training runs may vary slightly because the training notebook does not enforce a fixed seed.
 
 ## Results
 
